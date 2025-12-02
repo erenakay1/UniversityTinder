@@ -1,0 +1,6 @@
+@UniversityTinder_HostAddress = http://localhost:5213
+
+GET {{UniversityTinder_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
