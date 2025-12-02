@@ -48,7 +48,7 @@ namespace UniversityTinder.Data
                     .HasConversion(
                         v => JsonSerializer.Serialize(v, (JsonSerializerOptions)null),
                         v => JsonSerializer.Deserialize<List<Photo>>(v, (JsonSerializerOptions)null))
-                    .HasColumnType("jsonb");
+                    .HasColumnType("nvarchar(max)");
             });
 
 

@@ -36,9 +36,8 @@
   </ItemGroup>
 
   <ItemGroup>
-	  <ProjectReference Include="..\UniversityTinder_Utility\UniversityTinder_Utility.csproj" />
+	  <ProjectReference Include="..\Utility\Utility.csproj" />
     <Folder Include="Controllers\" />
-    <Folder Include="Services\IServices\" />
   </ItemGroup>
 
 </Project>
