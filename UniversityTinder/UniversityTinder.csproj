@@ -37,7 +37,6 @@
 
   <ItemGroup>
 	  <ProjectReference Include="..\Utility\Utility.csproj" />
-    <Folder Include="Controllers\" />
   </ItemGroup>
 
 </Project>

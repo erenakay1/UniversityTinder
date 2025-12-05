@@ -17,6 +17,7 @@ namespace UniversityTinder.Models.Dto
         public DateTime? EmailVerifiedAt { get; set; }
         public DateTime? LastVerificationCheck { get; set; }
         public bool IsUniversityVerified { get; set; } = false;
+        public string? Role { get; set; }
 
     }
 }

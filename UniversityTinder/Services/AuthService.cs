@@ -469,7 +469,7 @@ namespace UniversityTinder.Services
                     Gender = registrationRequestDTO.Gender,
                     DateOfBirth = registrationRequestDTO.DateOfBirth,
                     UniversityDomain = emailDomain,
-                    UniversityName = GetUniversityName(emailDomain),
+                    UniversityName = GetUniversityName(emailDomain), // registrationRequestDTO.UniversityName
                     IsUniversityVerified = false, // Email verification sonrası true olacak
                     EmailVerifiedAt = null,
                     LastVerificationCheck = DateTime.UtcNow
@@ -545,7 +545,7 @@ namespace UniversityTinder.Services
                     await _db.SaveChangesAsync();
 
                     // Default role ata
-                    await _userManager.AddToRoleAsync(userToReturn, "USER");
+                    //await _userManager.AddToRoleAsync(userToReturn, "USER");
 
                     // Email verification token gönder
                     var emailToken = await _userManager.GenerateEmailConfirmationTokenAsync(userToReturn);
@@ -607,7 +607,8 @@ namespace UniversityTinder.Services
         "ege.edu.tr",
         "hacettepe.edu.tr",
         "ankara.edu.tr",
-        "yildiz.edu.tr"
+        "yildiz.edu.tr",
+        "ogr.halic.edu.tr"
         // Daha fazla üniversite eklenebilir
     };
 

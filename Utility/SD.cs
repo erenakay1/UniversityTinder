@@ -18,6 +18,7 @@
         public static string CurrentAPIVersion = "v2";
         public const string Admin = "ADMIN";
         public const string Customer = "CUSTOMER";
+        public const string User = "USER";
         public const string Premium = "PREMIUM";
         public const string Man = "Man";
         public const string Woman = "Woman";

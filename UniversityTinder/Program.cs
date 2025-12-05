@@ -8,6 +8,11 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.OpenApi.Models;
 using UniversityTinder.Extensions;
+using UniversityTinder.Services.IServices;
+using UniversityTinder.Services;
+using Amazon.Extensions.NETCore.Setup;
+using Amazon.S3;
+using Amazon.SQS;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -32,10 +37,28 @@ builder.Services.AddSingleton(mapper);
 
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("ApiSettings:JwtOptions"));
+builder.Services.AddDefaultAWSOptions(builder.Configuration.GetAWSOptions());
+var awsOptions = new AWSOptions
+{
+    Credentials = new Amazon.Runtime.BasicAWSCredentials(
+        builder.Configuration["AWS:AccessKey"],
+        builder.Configuration["AWS:SecretKey"]),
+    Region = Amazon.RegionEndpoint.GetBySystemName(builder.Configuration["AWS:Region"])
+};
+builder.Services.AddAWSService<IAmazonS3>(awsOptions);
+builder.Services.AddAWSService<IAmazonSQS>(awsOptions);
 
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>().AddEntityFrameworkStores<AppDbContext>().AddDefaultTokenProviders();
 
 builder.Services.AddControllers();
+builder.Services.AddMemoryCache();
+builder.Services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IImageService, ImageService>();
+builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<IPasswordResetCodeService, PasswordResetCodeService>();
+
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(option =>
