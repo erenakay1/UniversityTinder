@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using UniversityTinder.Data;
 
@@ -11,9 +12,11 @@ using UniversityTinder.Data;
 namespace UniversityTinder.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251205201428_addNavigationOnPhotoToDb")]
+    partial class addNavigationOnPhotoToDb
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -489,6 +492,9 @@ namespace UniversityTinder.Migrations
                     b.Property<DateTime?>("PhotoVerifiedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("PhotosList")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime?>("PremiumExpiresAt")
                         .HasColumnType("datetime2");
 
@@ -629,9 +635,8 @@ namespace UniversityTinder.Migrations
             modelBuilder.Entity("UniversityTinder.Models.Photo", b =>
                 {
                     b.HasOne("UniversityTinder.Models.UserProfile", "Profile")
-                        .WithMany("PhotosList")
-                        .HasForeignKey("ProfileId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .WithMany()
+                        .HasForeignKey("ProfileId");
 
                     b.Navigation("Profile");
                 });
@@ -656,8 +661,6 @@ namespace UniversityTinder.Migrations
                     b.Navigation("MatchesList");
 
                     b.Navigation("PassedUsersList");
-
-                    b.Navigation("PhotosList");
 
                     b.Navigation("ReceivedLikesList");
 

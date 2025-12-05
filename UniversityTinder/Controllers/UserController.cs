@@ -3,7 +3,9 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
+using System.Text;
 using UniversityTinder.Data;
 using UniversityTinder.Models;
 using UniversityTinder.Models.Dto;
@@ -42,31 +44,29 @@ namespace UniversityTinder.Controllers
             {
                 var registerResponse = await _authService.Register(model);
 
-                if (registerResponse?.User == null)
+                _logger.LogInformation("Controller: {Controller}, Action: {Action}, Datetime: {Datetime}",
+                    nameof(UserController), nameof(Register), DateTime.Now);
+
+                if (!registerResponse.IsSuccess.HasValue)
                 {
-                    _logger.LogInformation("Request recieved by Controller: {Controller}, Action: {Action}, Datetime: {Datetime}",
-                        nameof(UserController), nameof(Register), DateTime.Now.ToString());
-                    _logger.LogInformation("Kayıt oluşturulamadı");
+                    _logger.LogWarning("Kayıt başarısız: {Message}", registerResponse.Message);
                     _responseDto.IsSuccess = false;
-                    _responseDto.Message = "Kayıt işlemi başarısız";
+                    _responseDto.Message = registerResponse.Message; // Servisten gelen mesajı kullan
                     return BadRequest(_responseDto);
                 }
 
-                _logger.LogInformation("Request recieved by Controller: {Controller}, Action: {Action}, Datetime: {Datetime}",
-                    nameof(UserController), nameof(Register), DateTime.Now.ToString());
-                _logger.LogInformation("Kayıt başarıyla oluşturuldu.");
-
+                _logger.LogInformation("Kayıt başarılı: {Email}", model.Email);
                 _responseDto.IsSuccess = true;
-                _responseDto.Result = registerResponse; // Burada result'ı set ediyoruz
-                _responseDto.Message = "Kullanıcı kaydı başarıyla oluşturuldu.";
+                _responseDto.Result = registerResponse;
+                _responseDto.Message = registerResponse.Message;
                 return Ok(_responseDto);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Register işlemi sırasında hata: {Message}", ex.Message);
+                _logger.LogError(ex, "Register hatası: {Message}", ex.Message);
                 _responseDto.IsSuccess = false;
-                _responseDto.Message = $"Kayıt işlemi başarısız: {ex.Message}";
-                return BadRequest(_responseDto);
+                _responseDto.Message = "Beklenmeyen bir hata oluştu. Lütfen tekrar deneyin.";
+                return StatusCode(500, _responseDto);
             }
         }
 
@@ -279,5 +279,71 @@ namespace UniversityTinder.Controllers
                 return BadRequest(_responseDto);
             }
         }
+
+
+        [HttpGet("verify-email")]
+        [AllowAnonymous]
+        public async Task<IActionResult> VerifyEmail([FromQuery] string userId, [FromQuery] string token)
+        {
+            if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(token))
+            {
+                return BadRequest(new { IsSuccess = false, Message = "Geçersiz doğrulama linki" });
+            }
+
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                return NotFound(new { IsSuccess = false, Message = "Kullanıcı bulunamadı" });
+            }
+
+            if (user.EmailConfirmed)
+            {
+                return Ok(new { IsSuccess = true, Message = "Email zaten doğrulanmış" });
+            }
+
+            // Token'ı decode et
+            var decodedToken = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(token));
+
+            var result = await _userManager.ConfirmEmailAsync(user, decodedToken);
+            if (!result.Succeeded)
+            {
+                _logger.LogWarning("Email doğrulama başarısız: {UserId}, Hatalar: {Errors}",
+                    userId, string.Join(", ", result.Errors.Select(e => e.Description)));
+                return BadRequest(new { IsSuccess = false, Message = "Doğrulama başarısız. Link süresi dolmuş olabilir." });
+            }
+
+            // Üniversite doğrulamasını aktif et
+            user.IsUniversityVerified = true;
+            user.EmailVerifiedAt = DateTime.UtcNow;
+            await _userManager.UpdateAsync(user);
+
+            _logger.LogInformation("Email doğrulandı: {Email}", user.Email);
+
+            // HTML response veya redirect
+            var html = @"
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <meta charset='utf-8'>
+                    <title>Email Doğrulandı</title>
+                    <style>
+                        body { font-family: Arial; display: flex; justify-content: center; align-items: center; height: 100vh; background: #f0f0f0; }
+                        .card { background: white; padding: 40px; border-radius: 10px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+                        .success { color: #4CAF50; font-size: 48px; }
+                    </style>
+                </head>
+                <body>
+                    <div class='card'>
+                        <div class='success'>✓</div>
+                        <h1>Email Doğrulandı!</h1>
+                        <p>Hesabın aktif edildi. Artık uygulamaya giriş yapabilirsin.</p>
+                    </div>
+                </body>
+                </html>";
+
+            return Content(html, "text/html");
+        }
+
+
     }
 }

@@ -64,8 +64,10 @@ namespace UniversityTinder
                 // UserProfile <-> ProfileDto (Detailed profile)
                 config.CreateMap<UserProfile, ProfileDto>()
                     .ForMember(dest => dest.User, opt => opt.MapFrom(src => src.User))
+                    .ForMember(dest => dest.PhotosList, opt => opt.MapFrom(src => src.PhotosList)) // ⭐ Photos mapping
                     .ReverseMap()
-                    .ForMember(dest => dest.User, opt => opt.Ignore());
+                    .ForMember(dest => dest.User, opt => opt.Ignore())
+                    .ForMember(dest => dest.PhotosList, opt => opt.Ignore()); // ⭐ Reverse'te ignore
 
                 // UserProfile <-> ProfileCreateDto
                 config.CreateMap<ProfileCreateDto, UserProfile>()
@@ -116,33 +118,36 @@ namespace UniversityTinder
 
                 // ========== PHOTO MAPPINGS ==========
 
-                config.CreateMap<PhotoDto, PhotoDto>(); // Self mapping for cloning
+                config.CreateMap<Photo, PhotoDto>()
+                    .ForMember(dest => dest.PostImage, opt => opt.Ignore()) // IFormFile DTO'da var ama entity'de yok
+                    .ReverseMap()
+                    .ForMember(dest => dest.Profile, opt => opt.Ignore()); // ⭐ Navigation property ignore
 
                 // ========== SWIPE & MATCH MAPPINGS ==========
 
                 // SwipeRequestDto -> internal processing (if needed)
-                
+
 
                 // ========== MESSAGE MAPPINGS ==========
 
-               
 
-                
+
+
 
                 // ========== REPORT MAPPINGS ==========
 
-                
+
 
                 // ========== BLOCK MAPPINGS ==========
 
-                
+
 
                 // ========== PREMIUM & SUBSCRIPTION MAPPINGS ==========
 
-                
+
                 // ========== BOOST MAPPINGS ==========
 
-                
+
 
             });
 

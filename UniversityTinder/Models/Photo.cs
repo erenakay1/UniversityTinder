@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace UniversityTinder.Models
 {
@@ -16,5 +17,9 @@ namespace UniversityTinder.Models
         public bool IsVerified { get; set; } = false;
         public DateTime UploadedAt { get; set; }
         public int? ProfileId { get; set; }
+        [ForeignKey("ProfileId")]
+        [ValidateNever]
+        [JsonIgnore]  // ⭐ JSON'da Profile property'sini gösterme
+        public UserProfile? Profile { get; set; }
     }
 }

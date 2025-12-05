@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿using Amazon.Runtime.Internal.Transform;
+using AutoMapper;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
@@ -548,9 +549,9 @@ namespace UniversityTinder.Services
                     //await _userManager.AddToRoleAsync(userToReturn, "USER");
 
                     // Email verification token gönder
+                    // Email verification token gönder
                     var emailToken = await _userManager.GenerateEmailConfirmationTokenAsync(userToReturn);
-                    // TODO: Email gönderme servisi ile emailToken'ı kullanıcıya gönder
-                    // await _emailService.SendVerificationEmailAsync(userToReturn.Email, emailToken);
+                    await _emailService.SendVerificationEmailAsync(userToReturn.Email, emailToken, userToReturn.Id);
 
 
                     // AutoMapper kullanın
@@ -630,7 +631,8 @@ namespace UniversityTinder.Services
         { "ege.edu.tr", "Ege Üniversitesi" },
         { "hacettepe.edu.tr", "Hacettepe Üniversitesi" },
         { "ankara.edu.tr", "Ankara Üniversitesi" },
-        { "yildiz.edu.tr", "Yıldız Teknik Üniversitesi" }
+        { "yildiz.edu.tr", "Yıldız Teknik Üniversitesi" },
+        {"ogr.halic.edu.tr", "Halic Universitesi" }
     };
 
             return universityMap.TryGetValue(domain.ToLower(), out var name) ? name : domain;

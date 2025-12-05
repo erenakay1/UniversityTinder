@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
 using UniversityTinder.Models;
+using UniversityTinder.Models.Dto;
 
 namespace UniversityTinder.Data
 {
@@ -28,27 +29,36 @@ namespace UniversityTinder.Data
             //    .OnDelete(DeleteBehavior.NoAction);
 
 
-            // ApplicationUser
+            // ========== APPLICATION USER ==========
             modelBuilder.Entity<ApplicationUser>(entity =>
             {
                 entity.Property(e => e.FirstName).IsRequired().HasMaxLength(50);
                 entity.Property(e => e.LastName).IsRequired().HasMaxLength(50);
                 entity.Property(e => e.Gender).IsRequired().HasMaxLength(20);
                 entity.Property(e => e.UniversityDomain).IsRequired().HasMaxLength(100);
-
                 entity.HasIndex(e => e.Email).IsUnique();
                 entity.HasIndex(e => e.UniversityDomain);
             });
 
+            // ========== USER PROFILE ==========
             modelBuilder.Entity<UserProfile>(entity =>
             {
                 entity.HasKey(e => e.ProfileId);
 
-                entity.Property(e => e.PhotosList)
-                    .HasConversion(
-                        v => JsonSerializer.Serialize(v, (JsonSerializerOptions)null),
-                        v => JsonSerializer.Deserialize<List<Photo>>(v, (JsonSerializerOptions)null))
-                    .HasColumnType("nvarchar(max)");
+                // ⭐ PhotosList -> Navigation Property (AYRI TABLO)
+                entity.HasMany(e => e.PhotosList)
+                    .WithOne(p => p.Profile)
+                    .HasForeignKey(p => p.ProfileId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                
+            });
+
+            // ========== PHOTO ==========
+            modelBuilder.Entity<Photo>(entity =>
+            {
+                entity.HasKey(e => e.PhotoId);
+                entity.Property(e => e.ProfileId).IsRequired(false); // Nullable
             });
 
 

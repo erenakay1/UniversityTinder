@@ -1,5 +1,7 @@
 ﻿using MailKit.Net.Smtp;
+using Microsoft.AspNetCore.WebUtilities;
 using MimeKit;
+using System.Text;
 using UniversityTinder.Services.IServices;
 
 namespace UniversityTinder.Services
@@ -133,6 +135,99 @@ namespace UniversityTinder.Services
             finally
             {
                 await client.DisconnectAsync(true);
+            }
+        }
+
+        public async Task SendVerificationEmailAsync(string email, string token, string userId)
+        {
+            try
+            {
+                var encodedToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
+                var verificationLink = $"https://localhost:7203/api/user/verify-email?userId={userId}&token={encodedToken}";
+
+                var subject = "Email Doğrulama - UniversityTinder";
+
+                var htmlMessage = $@"
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                        <meta charset='utf-8'>
+                        <style>
+                            body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+                            .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+                            .header {{ background-color: #E91E63; color: white; padding: 20px; text-align: center; border-radius: 10px 10px 0 0; }}
+                            .content {{ padding: 30px; background-color: #f9f9f9; }}
+                            .btn {{ 
+                                display: inline-block;
+                                background-color: #E91E63; 
+                                color: white !important; 
+                                padding: 15px 40px; 
+                                text-decoration: none; 
+                                border-radius: 25px;
+                                font-weight: bold;
+                                margin: 20px 0;
+                            }}
+                            .btn:hover {{ background-color: #C2185B; }}
+                            .footer {{ text-align: center; padding: 20px; font-size: 12px; color: #666; }}
+                            .warning {{ background-color: #fff3cd; padding: 15px; border-radius: 5px; margin: 15px 0; }}
+                            .link-box {{ 
+                                background-color: #e8e8e8; 
+                                padding: 10px; 
+                                border-radius: 5px; 
+                                word-break: break-all;
+                                font-size: 12px;
+                                margin-top: 20px;
+                            }}
+                        </style>
+                    </head>
+                    <body>
+                        <div class='container'>
+                            <div class='header'>
+                                <h1>💕 UniversityTinder</h1>
+                                <p>Email Doğrulama</p>
+                            </div>
+                            <div class='content'>
+                                <h2>Hoş Geldin! 🎉</h2>
+                                <p>UniversityTinder'a kayıt olduğun için teşekkürler!</p>
+                                <p>Hesabını aktif etmek ve üniversite öğrencisi olduğunu doğrulamak için aşağıdaki butona tıkla:</p>
+            
+                                <div style='text-align: center;'>
+                                    <a href='{verificationLink}' class='btn'>✉️ Email Adresimi Doğrula</a>
+                                </div>
+            
+                                <div class='warning'>
+                                    <strong>⏰ Önemli:</strong>
+                                    <ul style='margin: 10px 0;'>
+                                        <li>Bu link <strong>24 saat</strong> geçerlidir</li>
+                                        <li>Link sadece <strong>bir kez</strong> kullanılabilir</li>
+                                        <li>Doğrulama yapılmadan eşleşme özelliklerini kullanamazsın</li>
+                                    </ul>
+                                </div>
+            
+                                <p>Buton çalışmıyorsa, aşağıdaki linki tarayıcına kopyala:</p>
+                                <div class='link-box'>
+                                    {verificationLink}
+                                </div>
+            
+                                <p style='margin-top: 20px; color: #666;'>
+                                    Eğer bu hesabı sen oluşturmadıysan, bu emaili görmezden gelebilirsin.
+                                </p>
+                            </div>
+                            <div class='footer'>
+                                <p>Bu otomatik bir e-postadır, lütfen yanıtlamayın.</p>
+                                <p>© 2025 UniversityTinder. Tüm hakları saklıdır.</p>
+                            </div>
+                        </div>
+                    </body>
+                    </html>";
+
+                await SendEmailAsync(email, subject, htmlMessage);
+                _logger.LogInformation("Email doğrulama maili gönderildi: {Email}", email);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Email doğrulama maili gönderilemedi: {Email}", email);
+                throw;
             }
         }
     }
