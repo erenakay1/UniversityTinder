@@ -10,12 +10,14 @@
 	  <PackageReference Include="Amazon.SQS.ExtendedClient" Version="1.0.4" />
 	  <PackageReference Include="AutoMapper" Version="12.0.1" />
 	  <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.1" />
-	  <PackageReference Include="AWSSDK.SQS" Version="3.7.400.129" />
+	  <PackageReference Include="AWSSDK.Core" Version="3.7.400" />
+	  <PackageReference Include="AWSSDK.Extensions.NETCore.Setup" Version="3.7.301" />
+	  <PackageReference Include="AWSSDK.Rekognition" Version="3.7.400" />
+	  <PackageReference Include="AWSSDK.S3" Version="3.7.400" />
+	  <PackageReference Include="AWSSDK.SQS" Version="3.7.400" />
 	  <PackageReference Include="Bogus" Version="35.6.4" />
 	  <PackageReference Include="Google.Cloud.Language.V1" Version="3.7.0" />
 	  <PackageReference Include="Google.Cloud.Vision.V1" Version="3.7.0" />
-	  <PackageReference Include="AWSSDK.Extensions.NETCore.Setup" Version="3.7.400" />
-	  <PackageReference Include="AWSSDK.S3" Version="3.7.416.4" />
 	  <PackageReference Include="MailKit" Version="4.7.1.1" />
 	  <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.7" />
 	  <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.7" />

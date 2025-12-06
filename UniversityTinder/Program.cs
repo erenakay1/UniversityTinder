@@ -1,4 +1,4 @@
-using AutoMapper;
+﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using UniversityTinder.Data;
 using UniversityTinder;
@@ -13,13 +13,14 @@ using UniversityTinder.Services;
 using Amazon.Extensions.NETCore.Setup;
 using Amazon.S3;
 using Amazon.SQS;
+using Amazon.Rekognition;
 
 var builder = WebApplication.CreateBuilder(args);
 
 
 // Add services to the container.
 
-// Serilog'u Seq ile yap�land�r
+// Serilog'u Seq ile yapılandır
 builder.Host.UseSerilog((hostingContext, loggerConfiguration) =>
 {
     loggerConfiguration
@@ -37,7 +38,9 @@ builder.Services.AddSingleton(mapper);
 
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("ApiSettings:JwtOptions"));
-builder.Services.AddDefaultAWSOptions(builder.Configuration.GetAWSOptions());
+// ============================================
+// AWS CONFIGURATION
+// ============================================
 var awsOptions = new AWSOptions
 {
     Credentials = new Amazon.Runtime.BasicAWSCredentials(
@@ -45,14 +48,21 @@ var awsOptions = new AWSOptions
         builder.Configuration["AWS:SecretKey"]),
     Region = Amazon.RegionEndpoint.GetBySystemName(builder.Configuration["AWS:Region"])
 };
-builder.Services.AddAWSService<IAmazonS3>(awsOptions);
-builder.Services.AddAWSService<IAmazonSQS>(awsOptions);
+
+// AWS Default Options'ı ayarla
+builder.Services.AddDefaultAWSOptions(awsOptions);  // ✅ Doğru şekilde kullanıldı
+
+// AWS Servislerini kaydet
+builder.Services.AddAWSService<IAmazonS3>();           // ✅ Parametre kaldırıldı
+builder.Services.AddAWSService<IAmazonSQS>();          // ✅ Parametre kaldırıldı
+builder.Services.AddAWSService<IAmazonRekognition>();  // ✅ YENİ EKLENEN
 
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>().AddEntityFrameworkStores<AppDbContext>().AddDefaultTokenProviders();
 
 builder.Services.AddControllers();
 builder.Services.AddMemoryCache();
 builder.Services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
+builder.Services.AddScoped<IFaceVerificationService, AwsRekognitionFaceVerificationService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IImageService, ImageService>();
 builder.Services.AddScoped<IImageSensorService, ImageSensorService>();
@@ -115,7 +125,7 @@ app.UseRouting();
 app.UseCors("AllowSpecificOrigin");
 app.UseAuthentication();
 app.UseAuthorization();
-app.UseStaticFiles();
+//app.UseStaticFiles();
 
 app.MapControllers();
 

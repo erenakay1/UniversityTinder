@@ -47,6 +47,66 @@ namespace UniversityTinder.Services
             _logger.LogInformation($"S3 client initialized for bucket: {_bucketName} in region: {regionName}");
         }
 
+        //- S3'ten fotoğrafı byte array olarak indir (Face Verification için)
+        public async Task<byte[]?> GetImageBytesAsync(string imageUrl)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(imageUrl))
+                {
+                    _logger.LogWarning("Boş URL ile dosya indirme işlemi yapılamaz");
+                    return null;
+                }
+
+                _logger.LogInformation("S3'ten fotoğraf indiriliyor: {ImageUrl}", imageUrl);
+
+                // URL'den S3 key'ini çıkar
+                var s3Key = ExtractS3KeyFromUrl(imageUrl);
+
+                if (string.IsNullOrEmpty(s3Key))
+                {
+                    _logger.LogWarning("URL'den S3 key çıkarılamadı: {ImageUrl}", imageUrl);
+                    return null;
+                }
+
+                // S3'ten dosyayı indir
+                var request = new GetObjectRequest
+                {
+                    BucketName = _bucketName,
+                    Key = s3Key
+                };
+
+                using (var response = await _s3Client.GetObjectAsync(request))
+                using (var memoryStream = new MemoryStream())
+                {
+                    await response.ResponseStream.CopyToAsync(memoryStream);
+                    var bytes = memoryStream.ToArray();
+
+                    _logger.LogInformation("S3'ten fotoğraf indirildi. Key: {Key}, Size: {Size} bytes",
+                        s3Key, bytes.Length);
+
+                    return bytes;
+                }
+            }
+            catch (AmazonS3Exception ex)
+            {
+                if (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
+                {
+                    _logger.LogWarning("S3'te dosya bulunamadı: {ImageUrl}", imageUrl);
+                    return null;
+                }
+
+                _logger.LogError(ex, "S3'ten fotoğraf indirme hatası: {ImageUrl}, ErrorCode={ErrorCode}",
+                    imageUrl, ex.ErrorCode);
+                return null;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Fotoğraf indirme hatası: {ImageUrl}", imageUrl);
+                return null;
+            }
+        }
+
         public ImageSaveResult SaveImage(IFormFile image, string folderName, string objectId)
         {
             try
@@ -117,7 +177,7 @@ namespace UniversityTinder.Services
             }
         }
 
-        // ✅ YENİ - Tek dosya silme
+        //- Tek dosya silme
         public async Task<bool> DeleteImageAsync(string imageUrl)
         {
             try
@@ -174,7 +234,7 @@ namespace UniversityTinder.Services
             }
         }
 
-        // ✅ YENİ - Toplu dosya silme (prefix ile)
+        //- Toplu dosya silme (prefix ile)
         public async Task<bool> DeleteImagesByPrefixAsync(string prefix)
         {
             try
