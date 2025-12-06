@@ -17,27 +17,36 @@ using Amazon.Rekognition;
 
 var builder = WebApplication.CreateBuilder(args);
 
-
-// Add services to the container.
-
-// Serilog'u Seq ile yapılandır
+// ============================================
+// SERILOG CONFIGURATION
+// ============================================
 builder.Host.UseSerilog((hostingContext, loggerConfiguration) =>
 {
     loggerConfiguration
-        .ReadFrom.Configuration(hostingContext.Configuration) // appsettings.json'dan okur
+        .ReadFrom.Configuration(hostingContext.Configuration)
         .Enrich.FromLogContext()
-        .WriteTo.Seq("http://localhost:5341"); // Seq sunucusunun URL'si
+        .WriteTo.Console()
+        .WriteTo.Seq("http://localhost:5341");
 });
 
-
+// ============================================
+// DATABASE CONFIGURATION
+// ============================================
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultSQLConnection")));
+
+// ============================================
+// AUTOMAPPER CONFIGURATION
+// ============================================
 IMapper mapper = MappingConfig.RegisterMaps().CreateMapper();
 builder.Services.AddSingleton(mapper);
-
-
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+
+// ============================================
+// JWT CONFIGURATION
+// ============================================
 builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("ApiSettings:JwtOptions"));
+
 // ============================================
 // AWS CONFIGURATION
 // ============================================
@@ -49,18 +58,28 @@ var awsOptions = new AWSOptions
     Region = Amazon.RegionEndpoint.GetBySystemName(builder.Configuration["AWS:Region"])
 };
 
-// AWS Default Options'ı ayarla
-builder.Services.AddDefaultAWSOptions(awsOptions);  // ✅ Doğru şekilde kullanıldı
+builder.Services.AddDefaultAWSOptions(awsOptions);
+builder.Services.AddAWSService<IAmazonS3>();
+builder.Services.AddAWSService<IAmazonSQS>();
+builder.Services.AddAWSService<IAmazonRekognition>();
 
-// AWS Servislerini kaydet
-builder.Services.AddAWSService<IAmazonS3>();           // ✅ Parametre kaldırıldı
-builder.Services.AddAWSService<IAmazonSQS>();          // ✅ Parametre kaldırıldı
-builder.Services.AddAWSService<IAmazonRekognition>();  // ✅ YENİ EKLENEN
+// ============================================
+// IDENTITY CONFIGURATION
+// ============================================
+builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
+    .AddEntityFrameworkStores<AppDbContext>()
+    .AddDefaultTokenProviders();
 
-builder.Services.AddIdentity<ApplicationUser, IdentityRole>().AddEntityFrameworkStores<AppDbContext>().AddDefaultTokenProviders();
-
+// ============================================
+// CONTROLLERS & INFRASTRUCTURE
+// ============================================
 builder.Services.AddControllers();
 builder.Services.AddMemoryCache();
+builder.Services.AddHttpContextAccessor();  // ✅ ImageService için gerekli
+
+// ============================================
+// APPLICATION SERVICES
+// ============================================
 builder.Services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
 builder.Services.AddScoped<IFaceVerificationService, AwsRekognitionFaceVerificationService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
@@ -69,20 +88,24 @@ builder.Services.AddScoped<IImageSensorService, ImageSensorService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IPasswordResetCodeService, PasswordResetCodeService>();
 
-
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+// ============================================
+// SWAGGER CONFIGURATION
+// ============================================
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(option =>
 {
-    option.AddSecurityDefinition(name: JwtBearerDefaults.AuthenticationScheme, securityScheme: new Microsoft.OpenApi.Models.OpenApiSecurityScheme
-    {
-        Name = "Authorization",
-        Description = "Enter the Bearer Authorization string as following: 'Bearer Generated-JWT-Token'",
-        In = Microsoft.OpenApi.Models.ParameterLocation.Header,
-        Type = Microsoft.OpenApi.Models.SecuritySchemeType.ApiKey,
-        Scheme = "Bearer"
-    });
-    option.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
+    option.AddSecurityDefinition(
+        name: JwtBearerDefaults.AuthenticationScheme,
+        securityScheme: new OpenApiSecurityScheme
+        {
+            Name = "Authorization",
+            Description = "Enter the Bearer Authorization string as following: 'Bearer Generated-JWT-Token'",
+            In = ParameterLocation.Header,
+            Type = SecuritySchemeType.ApiKey,
+            Scheme = "Bearer"
+        });
+
+    option.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
         {
             new OpenApiSecurityScheme
@@ -92,41 +115,77 @@ builder.Services.AddSwaggerGen(option =>
                     Type = ReferenceType.SecurityScheme,
                     Id = JwtBearerDefaults.AuthenticationScheme
                 }
-            },new string[] { }
+            },
+            new string[] { }
         }
     });
 });
+
+// ============================================
+// AUTHENTICATION & AUTHORIZATION
+// ============================================
 builder.AddAppAuthetication();
 builder.Services.AddAuthorization();
-builder.Services.AddSwaggerGen();
 
+// ============================================
+// CORS CONFIGURATION
+// ============================================
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowSpecificOrigin", builder =>
+    options.AddPolicy("AllowSpecificOrigin", corsBuilder =>
     {
-        builder.WithOrigins("https://apiv2.paficdev.com/", "https://api.paficdev.com/")
-               .AllowAnyMethod()
-               .AllowAnyHeader()
-               .AllowCredentials();
+        corsBuilder.WithOrigins(
+                "https://universitytinderv2.justkey.online/",
+                "https://universitytinder.justkey.online/",
+                "http://localhost:3000"
+            )
+            .AllowAnyMethod()
+            .AllowAnyHeader()
+            .AllowCredentials();
     });
 });
 
+// ============================================
+// BUILD APPLICATION
+// ============================================
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+// ============================================
+// MIDDLEWARE PIPELINE
+// ============================================
+
+// Swagger
+app.UseSwagger();
+app.UseSwaggerUI(c =>
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "UniversityTinder API v1");
+    if (!app.Environment.IsDevelopment())
+    {
+        c.RoutePrefix = "swagger";
+    }
+});
 
 app.UseHttpsRedirection();
 app.UseRouting();
 app.UseCors("AllowSpecificOrigin");
 app.UseAuthentication();
 app.UseAuthorization();
-//app.UseStaticFiles();
+
+// Static files (wwwroot varsa)
+if (Directory.Exists(Path.Combine(Directory.GetCurrentDirectory(), "wwwroot")))
+{
+    app.UseStaticFiles();
+}
 
 app.MapControllers();
+
+// ============================================
+// STARTUP LOG
+// ============================================
+var logger = app.Services.GetRequiredService<ILogger<Program>>();
+logger.LogInformation("🚀 UniversityTinder API Started");
+logger.LogInformation("📍 Environment: {Environment}", app.Environment.EnvironmentName);
+logger.LogInformation("🌍 AWS Region: {Region}", builder.Configuration["AWS:Region"]);
+logger.LogInformation("💾 Database: Connected");
 
 app.Run();
