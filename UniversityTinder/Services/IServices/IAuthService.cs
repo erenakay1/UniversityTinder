@@ -16,5 +16,6 @@ namespace UniversityTinder.Services.IServices
         Task<bool> AssignRole(string email, string roleName);
         Task<string> VerifyEmailWithCode(VerifyEmailWithCodeRequestDTO verifyRequest);
         Task<string> ResendVerificationCode(ResendVerificationCodeRequestDTO resendRequest);
+        Task<bool> IsAccountExist(string email);
     }
 }

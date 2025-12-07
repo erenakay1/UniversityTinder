@@ -381,6 +381,26 @@ namespace UniversityTinder.Services
             }
         }
 
+
+
+        public async Task<bool> IsAccountExist(string email)
+        {
+            try
+            {
+                var user = await _db.ApplicationUsers.FirstOrDefaultAsync(u => u.Email.ToLower() == email.ToLower());
+                if (user == null)
+                {
+                    throw new Exception("Kullanıcı bulunamadı");
+                }
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+        }
+
         public async Task<LoginResponseDto> Login(LoginRequestDTO loginRequestDTO)
         {
             var user = _db.ApplicationUsers.FirstOrDefault(u => u.Email.ToLower() == loginRequestDTO.Email.ToLower());

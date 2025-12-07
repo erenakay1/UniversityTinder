@@ -186,6 +186,38 @@ namespace UniversityTinder.Controllers
         }
 
 
+        [HttpGet("IsAccountExist/{email}")]
+        public async Task<IActionResult> IsAccountExist(string email)
+        {
+            try
+            {
+                var user = await _authService.IsAccountExist(email);
+
+                _logger.LogInformation("Request received by Controller: {Controller}, Action: {Action}, Datetime: {Datetime}",
+                    nameof(UserController), nameof(IsAccountExist), DateTime.Now.ToString());
+
+                _responseDto.IsSuccess = true;
+                if (user)
+                {
+                    _responseDto.Message = "Hesap mevcut.";
+                }
+                else
+                {
+                    _responseDto.Message = "Hesap mevcut değil.";
+                }
+                _responseDto.Result = user;
+                return Ok(_responseDto);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "GetUser işlemi sırasında hata: {Message}", ex.Message);
+                _responseDto.IsSuccess = false;
+                _responseDto.Message = $"Kullanıcı getirme işlemi başarısız: {ex.Message}";
+                return BadRequest(_responseDto);
+            }
+        }
+
+
         [Authorize]
         [HttpPut("UpdateUser")]
         public async Task<IActionResult> UpdateUser([FromBody] UpdateUserRequestDTO model)
