@@ -1,0 +1,113 @@
+## ===== VISUAL STUDIO CACHE & TEMP FILES =====
+.vs/
+**/.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+## ===== BUILD RESULTS =====
+[Dd]ebug/
+[Rr]elease/
+[Bb]in/
+[Oo]bj/
+**/bin/
+**/obj/
+
+## ===== USER-SPECIFIC FILES =====
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+## ===== PUBLISH PROFILES =====
+**/Properties/PublishProfiles/
+UniversityTinder/Properties/PublishProfiles/*.pubxml
+
+## ===== LOGS =====
+**/logs/
+**/*.log
+
+## ===== UPLOADED FILES =====
+**/wwwroot/uploads/
+**/wwwroot/images/ProfileImages/
+**/wwwroot/images/ProfilePhotos/
+**/wwwroot/keys/
+
+## ===== CONFIGURATION FILES (SENSITIVE DATA) =====
+appsettings.json
+appsettings.Development.json
+appsettings.Production.json
+appsettings.*.json
+**/appsettings.json
+**/appsettings.Development.json
+**/appsettings.Production.json
+
+## ===== ENVIRONMENT FILES =====
+.env
+.env.local
+.env.development
+.env.production
+**/.env
+**/.env.*
+
+## ===== NUGET PACKAGES =====
+*.nupkg
+*.snupkg
+packages/
+**/packages/*
+!**/packages/build/
+
+## ===== RIDER =====
+.idea/
+*.sln.iml
+
+## ===== VS CODE =====
+.vscode/
+*.code-workspace
+
+## ===== MAC =====
+.DS_Store
+**/.DS_Store
+
+## ===== WINDOWS =====
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+## ===== RESHARPER =====
+_ReSharper*/
+*.[Rr]e[Ss]harper
+*.DotSettings.user
+
+## ===== TEST RESULTS =====
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+
+## ===== NCrunch =====
+*.ncrunch*
+.*crunch*.local.xml
+
+## ===== DATABASE =====
+*.mdf
+*.ldf
+*.ndf
+
+## ===== MIGRATION BACKUPS =====
+**/Migrations/backup/
+
+## ===== TEMPORARY FILES =====
+*.tmp
+*.temp
+*.bak
+*.swp
+*~
+
+## ===== SSL CERTIFICATES & KEYS =====
+*.pfx
+*.p12
+*.key
+*.pem
+*.crt
+*.cer
