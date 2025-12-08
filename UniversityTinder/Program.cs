@@ -89,6 +89,8 @@ builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<ISwipeService, SwipeService>();
 builder.Services.AddScoped<IPasswordResetCodeService, PasswordResetCodeService>();
 builder.Services.AddScoped<IEmailVerificationCodeService, EmailVerificationCodeService>();
+builder.Services.AddScoped<IUniversitySeedService, UniversitySeedService>();
+
 // ============================================
 // SWAGGER CONFIGURATION
 // ============================================
