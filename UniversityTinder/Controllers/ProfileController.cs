@@ -447,10 +447,10 @@ namespace UniversityTinder.Controllers
                 }
 
                 // Dating preferences güncelleme
-                if (!string.IsNullOrEmpty(updateDto.InterestedIn))
+                if (updateDto.InterestedIn.HasValue)
                 {
-                    profile.InterestedIn = updateDto.InterestedIn;
-                    _logger.LogDebug("InterestedIn güncellendi: {InterestedIn}", updateDto.InterestedIn);
+                    profile.InterestedIn = updateDto.InterestedIn.Value;
+                    _logger.LogDebug("InterestedIn güncellendi: {InterestedIn}", updateDto.InterestedIn.Value);
                 }
 
                 if (updateDto.AgeRangeMin.HasValue)
@@ -467,6 +467,12 @@ namespace UniversityTinder.Controllers
                 {
                     profile.MaxDistance = updateDto.MaxDistance.Value;
                     _logger.LogDebug("MaxDistance güncellendi: {MaxDistance} km", updateDto.MaxDistance);
+                }
+
+                if (updateDto.Hobbies != null && updateDto.Hobbies.Any())
+                {
+                    profile.Hobbies = updateDto.Hobbies;
+                    _logger.LogDebug("Hobbies güncellendi. Adet: {Count}", updateDto.Hobbies.Count);
                 }
 
                 // Privacy settings güncelleme

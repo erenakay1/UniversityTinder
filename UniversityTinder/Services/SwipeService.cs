@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
 using System.Net;
+using static Utility.SD;
 
 namespace UniversityTinder.Services
 {
@@ -86,25 +87,25 @@ namespace UniversityTinder.Services
         }
 
         /// <summary>
-        /// Cinsiyet uyumluluğu kontrolü (karşılıklı)
+        /// Cinsiyet uyumluluğu kontrolü (karşılıklı) - ENUM VERSION
         /// </summary>
         private bool IsGenderCompatible(UserProfile currentUser, UserProfile targetUser)
         {
-            var currentUserGender = currentUser.User.Gender; // "Male" veya "Female"
-            var targetUserGender = targetUser.User.Gender;
+            var currentUserGender = currentUser.User.Gender; // GenderType enum
+            var targetUserGender = targetUser.User.Gender;   // GenderType enum
 
-            var currentUserInterestedIn = currentUser.InterestedIn; // "Male", "Female", "Everyone"
-            var targetUserInterestedIn = targetUser.InterestedIn;
+            var currentUserInterestedIn = currentUser.InterestedIn; // InterestedInType enum
+            var targetUserInterestedIn = targetUser.InterestedIn;   // InterestedInType enum
 
             // Current user'ın tercihi
-            bool currentUserInterested = currentUserInterestedIn == "Everyone" ||
-                                        (currentUserInterestedIn == "Erkek" && targetUserGender == "Erkek") ||
-                                        (currentUserInterestedIn == "Kadın" && targetUserGender == "Kadın");
+            bool currentUserInterested = currentUserInterestedIn == InterestedInType.Everyone ||
+                                        (currentUserInterestedIn == InterestedInType.Men && targetUserGender == GenderType.Male) ||
+                                        (currentUserInterestedIn == InterestedInType.Women && targetUserGender == GenderType.Female);
 
             // Target user'ın tercihi
-            bool targetUserInterested = targetUserInterestedIn == "Everyone" ||
-                                       (targetUserInterestedIn == "Erkek" && currentUserGender == "Erkek") ||
-                                       (targetUserInterestedIn == "Kadın" && currentUserGender == "Kadın");
+            bool targetUserInterested = targetUserInterestedIn == InterestedInType.Everyone ||
+                                       (targetUserInterestedIn == InterestedInType.Men && currentUserGender == GenderType.Male) ||
+                                       (targetUserInterestedIn == InterestedInType.Women && currentUserGender == GenderType.Female);
 
             // Her iki taraf da uyumlu olmalı
             return currentUserInterested && targetUserInterested;

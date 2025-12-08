@@ -10,6 +10,7 @@ using UniversityTinder.Models.Dto;
 using UniversityTinder.Models.Dto.UniversityTinder.Models.Dto;
 using UniversityTinder.Services.IServices;
 using Utility;
+using static Utility.SD;
 
 namespace UniversityTinder.Services
 {
@@ -89,7 +90,6 @@ namespace UniversityTinder.Services
                 // Null değerleri temizle
                 userDto.Name = userDto.Name ?? "";
                 userDto.Surname = userDto.Surname ?? "";
-                userDto.Gender = userDto.Gender ?? "";
                 userDto.Role = userDto.Role ?? "";
 
                 return userDto;
@@ -372,7 +372,6 @@ namespace UniversityTinder.Services
                 // Null güvenliği
                 userDto.Name = userDto.Name ?? "";
                 userDto.Surname = userDto.Surname ?? "";
-                userDto.Gender = userDto.Gender ?? "";
                 userDto.Email = userDto.Email ?? "";
                 userDto.PhoneNumber = userDto.PhoneNumber ?? "";
 
@@ -538,10 +537,12 @@ namespace UniversityTinder.Services
                         PhotosList = new List<Photo>(),
 
                         // Profile settings - defaults
-                        InterestedIn = "Everyone",
+                        InterestedIn = InterestedInType.Everyone, // "Everyone" yerine enum
                         AgeRangeMin = 18,
                         AgeRangeMax = 30,
                         MaxDistance = 50,
+
+                        Hobbies = new List<Hobbies>(),
 
                         // Privacy settings - defaults
                         ShowMyUniversity = true,
@@ -601,7 +602,6 @@ namespace UniversityTinder.Services
                     // Null güvenliği
                     userDto.Name = userDto.Name ?? "";
                     userDto.Surname = userDto.Surname ?? "";
-                    userDto.Gender = userDto.Gender ?? "";
                     userDto.Email = userDto.Email ?? "";
                     userDto.PhoneNumber = userDto.PhoneNumber ?? "";
                     userDto.DisplayName = newProfile.DisplayName;
@@ -881,7 +881,7 @@ namespace UniversityTinder.Services
             if (!string.IsNullOrEmpty(user.FirstName)) score += 10;
             if (!string.IsNullOrEmpty(user.LastName)) score += 10;
             if (!string.IsNullOrEmpty(user.Email)) score += 10;
-            if (!string.IsNullOrEmpty(user.Gender)) score += 10;
+            score += 10;
 
             // Email verification (20%)
             // Will be added when email is verified
@@ -955,8 +955,8 @@ namespace UniversityTinder.Services
                 if (!string.IsNullOrEmpty(updateRequest.Surname))
                     user.LastName = updateRequest.Surname;
 
-                if (!string.IsNullOrEmpty(updateRequest.Gender))
-                    user.Gender = updateRequest.Gender;
+                if (updateRequest.Gender.HasValue)
+                    user.Gender = updateRequest.Gender.Value;
 
                 if (!string.IsNullOrEmpty(updateRequest.Email))
                 {
@@ -978,7 +978,6 @@ namespace UniversityTinder.Services
                 // Null güvenliği
                 userDto.Name = userDto.Name ?? "";
                 userDto.Surname = userDto.Surname ?? "";
-                userDto.Gender = userDto.Gender ?? "";
                 userDto.Email = userDto.Email ?? "";
                 userDto.PhoneNumber = userDto.PhoneNumber ?? "";
 

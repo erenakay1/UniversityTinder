@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using static Utility.SD;
 
 namespace UniversityTinder.Models.Dto
 {
@@ -30,9 +31,9 @@ namespace UniversityTinder.Models.Dto
         public string? City { get; set; }
         public string? District { get; set; }
 
-        // Dating Preferences (Varsayılanlar var ama değiştirilebilir)
-        [Required]
-        public string InterestedIn { get; set; } = "Everyone"; // "Men", "Women", "Everyone"
+        [Required(ErrorMessage = "Tercih seçimi zorunludur")]
+        [EnumDataType(typeof(InterestedInType))]
+        public InterestedInType InterestedIn { get; set; } = InterestedInType.Everyone;
 
         [Range(18, 100)]
         public int AgeRangeMin { get; set; } = 18;
@@ -42,6 +43,11 @@ namespace UniversityTinder.Models.Dto
 
         [Range(1, 100)]
         public int MaxDistance { get; set; } = 50; // km
+
+        [Required(ErrorMessage = "En az 1 hobi seçmelisiniz")]
+        [MinLength(1, ErrorMessage = "En az 1 hobi seçmelisiniz")]
+        [MaxLength(10, ErrorMessage = "En fazla 10 hobi seçebilirsiniz")]
+        public List<Hobbies> Hobbies { get; set; } = new List<Hobbies>();
 
         // Privacy Settings
         public bool ShowMyUniversity { get; set; } = true;

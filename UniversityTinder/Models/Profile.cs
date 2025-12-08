@@ -2,6 +2,8 @@
 using System.ComponentModel.DataAnnotations;
 using UniversityTinder.Models.Dto;
 using System.Text.Json;
+using static Utility.SD;
+using Utility;
 
 namespace UniversityTinder.Models
 {
@@ -39,10 +41,12 @@ namespace UniversityTinder.Models
         public DateTime? LastLocationUpdate { get; set; }
 
         // Dating Preferences
-        public string InterestedIn { get; set; } = "Everyone";
+        public InterestedInType InterestedIn { get; set; } // Man | Woman | Everyone
         public int AgeRangeMin { get; set; } = 18;
         public int AgeRangeMax { get; set; } = 30;
         public int MaxDistance { get; set; } = 50;
+
+        public List<Hobbies>? Hobbies { get; set; }
 
         // Privacy Settings
         public bool ShowMyUniversity { get; set; } = true;

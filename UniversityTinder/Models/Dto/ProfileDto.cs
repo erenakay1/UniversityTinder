@@ -1,4 +1,6 @@
-﻿namespace UniversityTinder.Models.Dto
+﻿using static Utility.SD;
+
+namespace UniversityTinder.Models.Dto
 {
     public class ProfileDto
     {
@@ -11,10 +13,11 @@
         public string? Department { get; set; }
         public int? YearOfStudy { get; set; }
         public string? ProfileImageUrl { get; set; }
-        public string InterestedIn { get; set; } = "Everyone";
+        public InterestedInType InterestedIn { get; set; } // Man | Woman | Everyone
         public int AgeRangeMin { get; set; }
         public int AgeRangeMax { get; set; }
         public int MaxDistance { get; set; }
+        public List<Hobbies>? Hobbies { get; set; } = new List<Hobbies>();
         public bool ShowMyUniversity { get; set; }
         public List<PhotoDto>? PhotosList { get; set; }
         public List<IFormFile>? Files { get; set; }

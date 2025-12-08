@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
 using UniversityTinder.Models;
 using UniversityTinder.Models.Dto;
+using static Utility.SD;
 
 namespace UniversityTinder.Data
 {
@@ -34,7 +35,10 @@ namespace UniversityTinder.Data
             {
                 entity.Property(e => e.FirstName).IsRequired().HasMaxLength(50);
                 entity.Property(e => e.LastName).IsRequired().HasMaxLength(50);
-                entity.Property(e => e.Gender).IsRequired().HasMaxLength(20);
+                entity.Property(e => e.Gender)
+                .IsRequired()
+                .HasConversion<string>() // Enum'ı string olarak sakla
+                .HasMaxLength(20);
                 entity.Property(e => e.UniversityDomain).IsRequired().HasMaxLength(100);
                 entity.HasIndex(e => e.Email).IsUnique();
                 entity.HasIndex(e => e.UniversityDomain);
@@ -44,6 +48,18 @@ namespace UniversityTinder.Data
             modelBuilder.Entity<UserProfile>(entity =>
             {
                 entity.HasKey(e => e.ProfileId);
+
+                entity.Property(e => e.InterestedIn)
+                .IsRequired()
+                .HasConversion<string>(); // Enum'ı string olarak sakla
+
+                entity.Property(e => e.Hobbies)
+                    .HasConversion(
+                        v => JsonSerializer.Serialize(v, (JsonSerializerOptions)null),
+                        v => JsonSerializer.Deserialize<List<Hobbies>>(v, (JsonSerializerOptions)null)
+                    )
+                    .HasColumnType("nvarchar(max)");
+
 
                 // ⭐ PhotosList -> Navigation Property (AYRI TABLO)
                 entity.HasMany(e => e.PhotosList)

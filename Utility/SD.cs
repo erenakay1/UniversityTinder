@@ -29,11 +29,120 @@
             MultipartFormData,
         }
 
+        public enum GenderType
+        {
+            Male,
+            Female,
+            Other
+        }
 
+        public enum InterestedInType
+        {
+            Men,
+            Women,
+            Everyone
+        }
         public class ImageSaveResult
         {
             public string ImageUrl { get; set; }
             public string LocalPath { get; set; }
         }
+
+
+        public enum Hobbies
+        {
+            // Fitness & Sports
+            Gym,
+            Yoga,
+            Running,
+            Swimming,
+            Cycling,
+            Hiking,
+            RockClimbing,
+            Boxing,
+            MartialArts,
+            Dancing,
+            Pilates,
+
+            // Food & Drink
+            Cooking,
+            Baking,
+            WineTasting,
+            CoffeeLover,
+            Foodie,
+            VeganCooking,
+            Mixology,
+
+            // Arts & Creativity
+            Photography,
+            Painting,
+            Drawing,
+            Writing,
+            Poetry,
+            Crafts,
+            DIY,
+            Fashion,
+
+            // Music & Entertainment
+            Music,
+            Concerts,
+            PlayingGuitar,
+            PlayingPiano,
+            Singing,
+            DJing,
+            Festivals,
+
+            // Outdoor & Adventure
+            Traveling,
+            Camping,
+            Fishing,
+            Surfing,
+            Skiing,
+            Snowboarding,
+            Gardening,
+            BeachLife,
+
+            // Culture & Learning
+            Reading,
+            Museums,
+            ArtGalleries,
+            Theater,
+            Movies,
+            Documentary,
+            Learning,
+            Languages,
+
+            // Games & Tech
+            VideoGames,
+            BoardGames,
+            Chess,
+            Coding,
+            Gaming,
+            VR,
+            Podcasts,
+
+            // Social & Lifestyle
+            Volunteering,
+            Pets,
+            Dogs,
+            Cats,
+            Meditation,
+            Astrology,
+            Shopping,
+            Nightlife,
+            Brunch,
+            SocialDrinking,
+            Networking,
+
+            // Intellectual
+            Politics,
+            Philosophy,
+            Science,
+            History,
+            Investing,
+            Entrepreneurship
+        }
+
+
     }
 }

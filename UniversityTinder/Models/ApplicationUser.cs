@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using static Utility.SD;
 
 namespace UniversityTinder.Models
 {
@@ -7,7 +8,7 @@ namespace UniversityTinder.Models
         public string FirstName { get; set; } = string.Empty; // "Ramiz"
         public string LastName { get; set; } = string.Empty; // "Kadayıfcı"
         public DateTime DateOfBirth { get; set; }
-        public string Gender { get; set; } = string.Empty; // "Male", "Female", "Other"
+        public GenderType Gender { get; set; } // "Male", "Female", "Other"
 
         // University Verification
         public string Email { get; set; } = string.Empty; // "bilgiedu.net"

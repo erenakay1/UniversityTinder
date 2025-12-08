@@ -31,7 +31,7 @@ namespace UniversityTinder.Services
                 new Claim("UserName", applicationUser.UserName ?? ""),
                 new Claim("FirstName", applicationUser.FirstName ?? ""),
                 new Claim("LastName", applicationUser.LastName ?? ""),
-                new Claim("Gender", applicationUser.Gender ?? ""),
+                new Claim("Gender", applicationUser.Gender.ToString()),
                 
                 // University bilgileri
                 new Claim("UniversityName", applicationUser.UniversityName ?? ""),
@@ -71,7 +71,7 @@ namespace UniversityTinder.Services
                 new Claim("ShowMeOnApp", profile?.ShowMeOnApp.ToString() ?? "true"),
         
                 // Dating preferences
-                new Claim("InterestedIn", profile?.InterestedIn ?? "Everyone"),
+                new Claim("InterestedIn", profile?.InterestedIn.ToString() ?? "Everyone"),
                 new Claim("AgeRangeMin", profile?.AgeRangeMin.ToString() ?? "18"),
                 new Claim("AgeRangeMax", profile?.AgeRangeMax.ToString() ?? "30"),
         

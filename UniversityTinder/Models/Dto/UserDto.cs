@@ -1,5 +1,8 @@
 ﻿
 
+
+using static Utility.SD;
+
 namespace UniversityTinder.Models.Dto
 {
     public class UserDto
@@ -9,7 +12,7 @@ namespace UniversityTinder.Models.Dto
         public string Name { get; set; } = string.Empty;
         public string Surname { get; set; } = string.Empty;
         public string DisplayName { get; set; } = string.Empty; // "Ramiz K."
-        public string? Gender { get; set; }
+        public GenderType Gender { get; set; } // string yerine enum
         public string? Email { get; set; }
         public string? PhoneNumber { get; set; }
         public string? ProfileImageUrl { get; set; }

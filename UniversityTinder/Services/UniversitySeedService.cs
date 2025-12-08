@@ -7,6 +7,7 @@ using UniversityTinder.Data;
 using UniversityTinder.Models;
 using UniversityTinder.Models.Dto;
 using UniversityTinder.Services.IServices;
+using static Utility.SD;
 
 namespace UniversityTinder.Services
 {
@@ -192,8 +193,8 @@ namespace UniversityTinder.Services
             var stats = new SeedStatsDto
             {
                 TotalUsers = profiles.Count,
-                MaleUsers = profiles.Count(p => p.User.Gender == "Erkek"),
-                FemaleUsers = profiles.Count(p => p.User.Gender == "Kadın"),
+                MaleUsers = profiles.Count(p => p.User.Gender == GenderType.Male),
+                FemaleUsers = profiles.Count(p => p.User.Gender == GenderType.Female),
                 PremiumUsers = profiles.Count(p => p.IsPremium),
                 FreeUsers = profiles.Count(p => !p.IsPremium),
                 VerifiedUsers = profiles.Count(p => p.IsPhotoVerified),
@@ -272,7 +273,7 @@ namespace UniversityTinder.Services
             {
                 var random = new Random(Guid.NewGuid().GetHashCode());
                 var isMale = random.Next(2) == 0;
-                var gender = isMale ? "Erkek" : "Kadın";
+                var gender = isMale ? GenderType.Male : GenderType.Female;
 
                 var firstName = isMale
                     ? MaleNames[random.Next(MaleNames.Count)]
@@ -348,8 +349,8 @@ namespace UniversityTinder.Services
 
                     // Tercihler
                     InterestedIn = random.Next(10) < 8
-                        ? (isMale ? "Kadın" : "Erkek")
-                        : "Everyone",
+                    ? (isMale ? InterestedInType.Women : InterestedInType.Men)
+                    : InterestedInType.Everyone,
                     AgeRangeMin = 18,
                     AgeRangeMax = isPremium ? random.Next(25, 35) : 30,
                     MaxDistance = isPremium ? random.Next(20, 100) : 50,
@@ -577,13 +578,13 @@ namespace UniversityTinder.Services
             var user1InterestedIn = user1.InterestedIn;
             var user2InterestedIn = user2.InterestedIn;
 
-            bool user1Interested = user1InterestedIn == "Everyone" ||
-                                  (user1InterestedIn == "Erkek" && user2Gender == "Erkek") ||
-                                  (user1InterestedIn == "Kadın" && user2Gender == "Kadın");
+            bool user1Interested = user1InterestedIn == InterestedInType.Everyone ||
+                      (user1InterestedIn == InterestedInType.Men && user2Gender == GenderType.Male) ||
+                      (user1InterestedIn == InterestedInType.Women && user2Gender == GenderType.Female);
 
-            bool user2Interested = user2InterestedIn == "Everyone" ||
-                                  (user2InterestedIn == "Erkek" && user1Gender == "Erkek") ||
-                                  (user2InterestedIn == "Kadın" && user1Gender == "Kadın");
+            bool user2Interested = user2InterestedIn == InterestedInType.Everyone ||
+                                  (user2InterestedIn == InterestedInType.Men && user1Gender == GenderType.Male) ||
+                                  (user2InterestedIn == InterestedInType.Women && user1Gender == GenderType.Female);
 
             return user1Interested && user2Interested;
         }

@@ -1,4 +1,5 @@
 ﻿using Utility;
+using static Utility.SD;
 
 namespace UniversityTinder.Models.Dto
 {
@@ -8,7 +9,7 @@ namespace UniversityTinder.Models.Dto
         public string? Name { get; set; }
         public string DisplayName { get; set; }
         public string? Surname { get; set; }
-        public string? Gender { get; set; }
+        public GenderType? Gender { get; set; }
         public string? Email { get; set; }
         public string? PhoneNumber { get; set; }
     }

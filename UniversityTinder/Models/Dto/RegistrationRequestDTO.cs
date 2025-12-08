@@ -1,4 +1,7 @@
 ﻿
+using System.ComponentModel.DataAnnotations;
+using static Utility.SD;
+
 namespace UniversityTinder.Models.Dto
 {
     public class RegistrationRequestDTO
@@ -6,7 +9,9 @@ namespace UniversityTinder.Models.Dto
         public string FirstName { get; set; } = string.Empty; // "Ramiz"
         public string LastName { get; set; } = string.Empty; // "Kadayıfcı"
         public DateTime DateOfBirth { get; set; }
-        public string Gender { get; set; } = string.Empty; // "Male", "Female", "Other"
+        [Required]
+        [EnumDataType(typeof(GenderType))]
+        public GenderType Gender { get; set; }
 
         // University Verification
         public string Email { get; set; } = string.Empty; // "bilgiedu.net"

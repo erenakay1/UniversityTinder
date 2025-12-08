@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using static Utility.SD;
 
 namespace UniversityTinder.Models.Dto
 {
@@ -37,8 +38,8 @@ namespace UniversityTinder.Models.Dto
         // DATING PREFERENCES
         // ============================================
 
-        [RegularExpression("^(Male|Female|Everyone)$")]
-        public string? InterestedIn { get; set; }
+        [EnumDataType(typeof(InterestedInType), ErrorMessage = "Geçersiz tercih türü")]
+        public InterestedInType? InterestedIn { get; set; }
 
         [Range(18, 100)]
         public int? AgeRangeMin { get; set; }
@@ -48,6 +49,9 @@ namespace UniversityTinder.Models.Dto
 
         [Range(1, 100)]
         public int? MaxDistance { get; set; }
+
+        [MaxLength(10, ErrorMessage = "En fazla 10 hobi seçebilirsiniz")]
+        public List<Hobbies>? Hobbies { get; set; }
 
         // ============================================
         // PRIVACY SETTINGS
