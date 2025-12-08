@@ -86,6 +86,7 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IImageService, ImageService>();
 builder.Services.AddScoped<IImageSensorService, ImageSensorService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<ISwipeService, SwipeService>();
 builder.Services.AddScoped<IPasswordResetCodeService, PasswordResetCodeService>();
 builder.Services.AddScoped<IEmailVerificationCodeService, EmailVerificationCodeService>();
 // ============================================
