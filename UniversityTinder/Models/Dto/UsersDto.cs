@@ -24,5 +24,6 @@ namespace UniversityTinder.Models.Dto
 
         public bool IsPassed { get; set; } = false;
         public bool IsSuperLike { get; set; } = false;
+        public bool IsProfileCreated { get; set; } = false;
     }
 }

@@ -364,6 +364,9 @@ namespace UniversityTinder.Services
                     throw new Exception("Kullanıcı bulunamadı");
                 }
 
+                // --- BURAYI EKLİYORUZ: Profil bilgisini de çekmemiz lazım ---
+                var profile = await _db.UserProfiles.FirstOrDefaultAsync(p => p.UserId == userId);
+
                 var userDto = _mapper.Map<UserDto>(user);
 
                 // Null güvenliği
@@ -372,6 +375,16 @@ namespace UniversityTinder.Services
                 userDto.Gender = userDto.Gender ?? "";
                 userDto.Email = userDto.Email ?? "";
                 userDto.PhoneNumber = userDto.PhoneNumber ?? "";
+
+                // --- BURAYI EKLİYORUZ: Status ataması ---
+                userDto.IsProfileCreated = profile != null && profile.IsProfileCompleted;
+
+                // Eğer profil varsa ek bilgileri de doldurabilirsin (İsteğe bağlı)
+                if (profile != null)
+                {
+                    userDto.ProfileImageUrl = profile.ProfileImageUrl;
+                    userDto.DisplayName = profile.DisplayName;
+                }
 
                 return userDto;
             }
@@ -427,7 +440,10 @@ namespace UniversityTinder.Services
                 Name = user.FirstName,
                 Surname = user.LastName,
                 Gender = user.Gender,
-                PhoneNumber = user.PhoneNumber
+                PhoneNumber = user.PhoneNumber,
+
+                // Profil varsa ve IsProfileCompleted true ise, IsProfileCreated true döner.
+                IsProfileCreated = profile != null && profile.IsProfileCompleted
             };
 
             LoginResponseDto loginResponseDto = new LoginResponseDto()
@@ -593,6 +609,9 @@ namespace UniversityTinder.Services
                     userDto.Age = age;
                     userDto.UniversityName = userToReturn.UniversityName;
                     userDto.IsVerified = userToReturn.IsUniversityVerified;
+
+                    // Yeni kayıt olan kullanıcının profili henüz tamamlanmamıştır.
+                    userDto.IsProfileCreated = false;
 
                     // Token generate et
                     var roles = await _userManager.GetRolesAsync(userToReturn);

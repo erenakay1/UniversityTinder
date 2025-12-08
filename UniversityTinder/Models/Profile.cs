@@ -122,5 +122,28 @@ namespace UniversityTinder.Models
         public DateTime? LastActiveAt { get; set; }
         public bool IsActive { get; set; } = true;
         public bool IsProfileCompleted { get; set; } = false;
+
+
+        // ============================================
+        // ⭐ PREMIUM FİLTRE TERCİHLERİ (Yeni alanlar)
+        // ============================================
+
+        /// <summary>
+        /// Premium kullanıcının tercih ettiği üniversite domain
+        /// Örn: "bilgiedu.net" veya null (tüm üniversiteler)
+        /// </summary>
+        public string? PreferredUniversityDomain { get; set; }
+
+        /// <summary>
+        /// Premium kullanıcının tercih ettiği şehir
+        /// </summary>
+        public string? PreferredCity { get; set; }
+
+        /// <summary>
+        /// Premium kullanıcının tercih ettiği bölüm
+        /// </summary>
+        public string? PreferredDepartment { get; set; }
+
+
     }
 }

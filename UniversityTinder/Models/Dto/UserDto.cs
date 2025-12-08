@@ -22,6 +22,8 @@ namespace UniversityTinder.Models.Dto
         public bool IsVerified { get; set; } = false;
         public bool HasUnreadMessages { get; set; } = false;
         public bool IsActive { get; set; } = true;
+        public bool IsProfileCreated { get; set; } = false;
+
 
     }
 }
