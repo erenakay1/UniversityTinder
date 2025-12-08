@@ -355,6 +355,10 @@ namespace UniversityTinder.Services
                     AgeRangeMax = isPremium ? random.Next(25, 35) : 30,
                     MaxDistance = isPremium ? random.Next(20, 100) : 50,
 
+
+                    // ✅ YENİ: Hobbies ekle (3-7 random hobi)
+                    Hobbies = GenerateRandomHobbies(random),
+
                     // Gizlilik
                     ShowMyUniversity = random.Next(10) < 8,
                     ShowMeOnApp = true,
@@ -640,5 +644,16 @@ namespace UniversityTinder.Services
                 throw;
             }
         }
+
+        /// <summary>
+        /// Rastgele 3-7 hobi oluşturur
+        /// </summary>
+        private List<Hobbies> GenerateRandomHobbies(Random random)
+        {
+            var allHobbies = Enum.GetValues(typeof(Hobbies)).Cast<Hobbies>().ToList();
+            var count = random.Next(3, 8); // 3-7 hobi
+            return allHobbies.OrderBy(x => random.Next()).Take(count).ToList();
+        }
+
     }
 }
