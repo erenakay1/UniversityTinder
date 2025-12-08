@@ -214,6 +214,8 @@ namespace UniversityTinder.Services
                 // Günlük sayaç sıfırlama kontrolü
                 await ResetDailySwipeCountIfNeeded(currentUser);
 
+                // Referans tarih (Bugün)
+                var today = DateTime.UtcNow.Date;
                 // ============================================
                 // BASE FİLTRELEME (Herkes için geçerli)
                 // ============================================
@@ -237,9 +239,17 @@ namespace UniversityTinder.Services
                     _logger.LogInformation("Premium user - özel filtreler uygulanıyor");
 
                     // Yaş filtresi (premium kendi aralığını belirlemiş)
+                    //query = query.Where(p =>
+                    //    CalculateAge(p.User.DateOfBirth) >= currentUser.AgeRangeMin &&
+                    //    CalculateAge(p.User.DateOfBirth) <= currentUser.AgeRangeMax
+                    //);
+
+                    var minDateOfBirth = today.AddYears(-(currentUser.AgeRangeMax + 1));
+                    var maxDateOfBirth = today.AddYears(-currentUser.AgeRangeMin);
+
                     query = query.Where(p =>
-                        CalculateAge(p.User.DateOfBirth) >= currentUser.AgeRangeMin &&
-                        CalculateAge(p.User.DateOfBirth) <= currentUser.AgeRangeMax
+                        p.User.DateOfBirth > minDateOfBirth &&
+                        p.User.DateOfBirth <= maxDateOfBirth
                     );
 
                     // ⭐ Üniversite filtresi (varsa)
@@ -271,9 +281,16 @@ namespace UniversityTinder.Services
                     _logger.LogInformation("Free user - varsayılan filtreler uygulanıyor");
 
                     // Sabit yaş aralığı: 18-30
+                    //query = query.Where(p =>
+                    //    CalculateAge(p.User.DateOfBirth) >= FREE_AGE_MIN &&
+                    //    CalculateAge(p.User.DateOfBirth) <= FREE_AGE_MAX
+                    //);
+                    var minDateOfBirth = today.AddYears(-(FREE_AGE_MAX + 1));
+                    var maxDateOfBirth = today.AddYears(-FREE_AGE_MIN);
+
                     query = query.Where(p =>
-                        CalculateAge(p.User.DateOfBirth) >= FREE_AGE_MIN &&
-                        CalculateAge(p.User.DateOfBirth) <= FREE_AGE_MAX
+                        p.User.DateOfBirth > minDateOfBirth &&
+                        p.User.DateOfBirth <= maxDateOfBirth
                     );
 
                     // ÜNİVERSİTE FİLTRESİ YOK (rastgele gelecek)
