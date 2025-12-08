@@ -416,42 +416,44 @@ namespace UniversityTinder.Services
         public async Task<LoginResponseDto> Login(LoginRequestDTO loginRequestDTO)
         {
             var user = _db.ApplicationUsers.FirstOrDefault(u => u.Email.ToLower() == loginRequestDTO.Email.ToLower());
-            bool isValid = await _userManager.CheckPasswordAsync(user, loginRequestDTO.Password);
 
-            if (user == null || isValid == false)
+            // Kullanıcı yoksa veya şifre yanlışsa
+            if (user == null || !await _userManager.CheckPasswordAsync(user, loginRequestDTO.Password))
             {
                 return new LoginResponseDto() { User = null, Token = "" };
             }
 
-            // Profile bilgisini çek - Include OLMADAN
+            // Profile bilgisini çek
             var profile = await _db.UserProfiles
                 .FirstOrDefaultAsync(p => p.UserId == user.Id);
 
             var roles = await _userManager.GetRolesAsync(user);
 
-            // Token'ı profile ile birlikte generate et
+            // Token üret
             var token = _jwtTokenGenerator.GenerateToken(user, profile, roles);
 
-            UserDto userDto = new()
+            // ✅ DÜZELTME BURADA:
+            // Manuel "new UserDto" yerine AutoMapper kullanıyoruz.
+            // "IsVerified" hesabının doğru çalışması için "profile" nesnesini options ile içeri gönderiyoruz.
+            var userDto = _mapper.Map<UserDto>(user, opt =>
             {
-                Email = user.Email,
-                Id = user.Id,
-                Name = user.FirstName,
-                Surname = user.LastName,
-                Gender = user.Gender,
-                PhoneNumber = user.PhoneNumber,
+                // MappingConfig tarafında context.TryGetItems ile karşılayacağımız veri bu:
+                opt.Items["Profile"] = profile;
+            });
 
-                // Profil varsa ve IsProfileCompleted true ise, IsProfileCreated true döner.
-                IsProfileCreated = profile != null && profile.IsProfileCompleted
-            };
+            // AutoMapper zaten profil tamamlanma durumunu (IsProfileCreated) 
+            // senin Config dosyasında yazdığın kurallara göre halledecek.
+            // (Ancak UserDto mapping'inde IsProfileCreated'i ignore ettiysek burada elle verebilirsin, 
+            // ama genelde mapper içinde halletmek daha temizdir. Şimdilik elle set etmeye gerek kalmayabilir.)
 
-            LoginResponseDto loginResponseDto = new LoginResponseDto()
+            // Eğer mapping config'de IsProfileCreated'i Ignore ettiysen şu satırı ekle:
+            userDto.IsProfileCreated = profile != null && profile.IsProfileCompleted;
+
+            return new LoginResponseDto()
             {
                 User = userDto,
                 Token = token,
             };
-
-            return loginResponseDto;
         }
 
         public async Task<LoginResponseDto> Register(RegistrationRequestDTO registrationRequestDTO)
@@ -470,16 +472,34 @@ namespace UniversityTinder.Services
                     };
                 }
 
-                // University domain kontrolü
+                // ✅ Email formatını kontrol et (@ var mı?)
                 var emailDomain = registrationRequestDTO.Email.Split('@').LastOrDefault();
-                if (string.IsNullOrEmpty(emailDomain) || !IsValidUniversityDomain(emailDomain))
+                if (string.IsNullOrEmpty(emailDomain))
                 {
                     return new LoginResponseDto
                     {
                         User = null,
                         Token = null,
                         IsSuccess = false,
-                        Message = "Geçerli bir üniversite e-posta adresi kullanmalısınız"
+                        Message = "Geçerli bir email adresi giriniz"
+                    };
+                }
+
+                // ✅ YENİ: Üniversite domain kontrolü
+                // 1. Dictionary'de varsa → Kabul et
+                // 2. Dictionary'de yoksa ama .edu.tr veya .edu ile bitiyorsa → Kabul et
+                bool isValidUniversityDomain = _universityDomainMap.ContainsKey(emailDomain.ToLower()) ||
+                                                emailDomain.EndsWith(".edu.tr", StringComparison.OrdinalIgnoreCase) ||
+                                                emailDomain.EndsWith(".edu", StringComparison.OrdinalIgnoreCase);
+
+                if (!isValidUniversityDomain)
+                {
+                    return new LoginResponseDto
+                    {
+                        User = null,
+                        Token = null,
+                        IsSuccess = false,
+                        Message = "Sadece üniversite e-posta adresleri kabul edilir"
                     };
                 }
 
@@ -496,6 +516,9 @@ namespace UniversityTinder.Services
                     };
                 }
 
+                // ✅ University Name'i Dictionary'den al, yoksa domain'i kullan
+                var universityName = GetUniversityName(emailDomain);
+
                 // ApplicationUser oluştur
                 ApplicationUser user = new()
                 {
@@ -508,7 +531,7 @@ namespace UniversityTinder.Services
                     Gender = registrationRequestDTO.Gender,
                     DateOfBirth = registrationRequestDTO.DateOfBirth,
                     UniversityDomain = emailDomain,
-                    UniversityName = GetUniversityName(emailDomain), // registrationRequestDTO.UniversityName
+                    UniversityName = universityName, // registrationRequestDTO.UniversityName
                     IsUniversityVerified = false, // Email verification sonrası true olacak
                     EmailVerifiedAt = null,
                     LastVerificationCheck = DateTime.UtcNow
@@ -596,8 +619,14 @@ namespace UniversityTinder.Services
                     );
 
 
-                    // AutoMapper kullanın
-                    UserDto userDto = _mapper.Map<UserDto>(userToReturn);
+                    // Eski hali:
+                    // UserDto userDto = _mapper.Map<UserDto>(userToReturn);
+
+                    // ✅ Yeni hali (Profile bilgisini mapper'a context üzerinden gönderiyoruz):
+                    UserDto userDto = _mapper.Map<UserDto>(userToReturn, opt =>
+                    {
+                        opt.Items["Profile"] = newProfile;
+                    });
 
                     // Null güvenliği
                     userDto.Name = userDto.Name ?? "";
@@ -738,7 +767,7 @@ namespace UniversityTinder.Services
         {"atlas.edu.tr", "İSTANBUL ATLAS ÜNİVERSİTESİ"},
         {"aydin.edu.tr", "İSTANBUL AYDIN ÜNİVERSİTESİ"},
         {"beykent.edu.tr", "İSTANBUL BEYKENT ÜNİVERSİTESİ"},
-        {"bilgi.edu.tr", "İSTANBUL BİLGİ ÜNİVERSİTESİ"},
+        {"bilgiedu.net", "İSTANBUL BİLGİ ÜNİVERSİTESİ"},
         {"esenyurt.edu.tr", "İSTANBUL ESENYURT ÜNİVERSİTESİ"},
         {"galata.edu.tr", "İSTANBUL GALATA ÜNİVERSİTESİ"},
         {"gedik.edu.tr", "İSTANBUL GEDİK ÜNİVERSİTESİ"},
@@ -856,13 +885,16 @@ namespace UniversityTinder.Services
 
         private string GetUniversityName(string domain)
         {
-            // Dictionary'den değeri almaya çalışır. Bulamazsa, domainin kendisini döndürür.
+            // ✅ Dictionary'de varsa ismini al
             if (_universityDomainMap.TryGetValue(domain.ToLower(), out var name))
             {
                 return name;
             }
-            // Bu, normalde olmamalıdır çünkü IsValidUniversityDomain kontrolü önceden yapılmış olmalıdır.
-            return domain;
+
+            // ✅ Yoksa domain'i formatla ve geri döndür
+            // Örnek: bilgiedu.net → Bilgiedu.net Üniversitesi
+            var formattedDomain = domain.Replace(".edu.tr", "").Replace(".edu", "");
+            return $"{char.ToUpper(formattedDomain[0])}{formattedDomain.Substring(1)} Üniversitesi";
         }
 
         private int CalculateAge(DateTime dateOfBirth)

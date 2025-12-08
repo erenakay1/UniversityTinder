@@ -131,6 +131,13 @@ namespace UniversityTinder.Controllers
                 profile.AgeRangeMax = completeDto.AgeRangeMax;
                 profile.MaxDistance = completeDto.MaxDistance;
 
+                // ✅ YENİ: Hobbies ekle
+                if (completeDto.Hobbies != null && completeDto.Hobbies.Any())
+                {
+                    profile.Hobbies = completeDto.Hobbies;
+                    _logger.LogDebug("Hobbies eklendi: {Count} adet", completeDto.Hobbies.Count);
+                }
+
                 // Privacy settings güncelle
                 profile.ShowMyUniversity = completeDto.ShowMyUniversity;
                 profile.ShowMeOnApp = completeDto.ShowMeOnApp;
@@ -285,6 +292,13 @@ namespace UniversityTinder.Controllers
                 // Tüm fotoğrafları veritabanına ekle
                 _db.Photos.AddRange(photoEntities);
 
+                // ✅ YENİ: IsPhotoVerified güncelle (Tüm fotolar verified ise true)
+                profile.IsPhotoVerified = photoEntities.All(p => p.IsVerified);
+                if (profile.IsPhotoVerified)
+                {
+                    profile.PhotoVerifiedAt = DateTime.UtcNow;
+                }
+
                 // Photo status JSON'ını güncelle
                 profile.PhotoImageStatus = photoStatusList;
 
@@ -295,6 +309,12 @@ namespace UniversityTinder.Controllers
                 profile.IsProfileCompleted = true;
                 profile.UpdatedAt = DateTime.UtcNow;
                 profile.LastActiveAt = DateTime.UtcNow;
+
+                // ✅ YENİ: ApplicationUser güncelle
+                var user = profile.User;
+
+                // ProfileImageUrl'i user'a da kopyala
+                user.ProfileImageUrl = profile.ProfileImageUrl;
 
                 // Veritabanına kaydet
                 await _db.SaveChangesAsync();
@@ -307,7 +327,21 @@ namespace UniversityTinder.Controllers
                     profile.ProfileId, userId, profile.ProfileCompletionScore, verifiedCount, photoEntities.Count);
 
                 // Response hazırla
-                var profileDto = _mapper.Map<ProfileDto>(profile);
+                var profileDto = _mapper.Map<ProfileDto>(profile, opts =>
+                {
+                    opts.Items["Profile"] = profile;
+                });
+
+                // Artık UserDto'yu tekrar map etmene gerek yok, yukarıdaki satır onu da halletti.
+                // Sadece manuel düzeltmeleri (AutoMapper'ın yapamadığı) yap:
+
+                if (profileDto.User != null)
+                {
+                    profileDto.User.IsProfileCreated = profile.IsProfileCompleted;
+                    profileDto.User.ProfileImageUrl = profile.ProfileImageUrl;
+                    // IsVerified zaten Mapper tarafından context kullanılarak hesaplandı ✅
+                }
+
 
                 _responseDto.Result = profileDto;
                 _responseDto.IsSuccess = true;
@@ -834,8 +868,24 @@ namespace UniversityTinder.Controllers
                     "Profile başarıyla güncellendi. ProfileId: {ProfileId}, UserId: {UserId}",
                     profile.ProfileId, userId);
 
-                // Response hazırla
-                var profileDto = _mapper.Map<ProfileDto>(profile);
+                // Context içine 'Profile' nesnesini gönderiyoruz ki UserDto içindeki IsVerified hesaplanabilsin.
+                var profileDto = _mapper.Map<ProfileDto>(profile, opts =>
+                {
+                    opts.Items["Profile"] = profile;
+                });
+
+                // Manuel Garanti Atamalar (CompleteProfile ile aynı mantık)
+                if (profileDto.User != null)
+                {
+                    // Profil tamamlandı mı?
+                    profileDto.User.IsProfileCreated = profile.IsProfileCompleted;
+
+                    // Profil resmi güncel mi?
+                    profileDto.User.ProfileImageUrl = profile.ProfileImageUrl;
+
+                    // Onay durumu (Okul onayı + Yüz onayı)
+                    profileDto.User.IsVerified = profile.User.IsUniversityVerified && profile.IsPhotoVerified;
+                }
 
                 _responseDto.Result = profileDto;
                 _responseDto.IsSuccess = true;

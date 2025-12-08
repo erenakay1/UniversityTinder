@@ -16,25 +16,43 @@ namespace UniversityTinder
                 // ========== APPLICATION USER MAPPINGS ==========
 
                 // ApplicationUser <-> UsersDto
-                config.CreateMap<ApplicationUser, UsersDto>()
+                // ApplicationUser <-> UserDto
+                config.CreateMap<ApplicationUser, UserDto>()
                     .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
                     .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.Id))
                     .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.FirstName))
                     .ForMember(dest => dest.Surname, opt => opt.MapFrom(src => src.LastName))
-                    .ForMember(dest => dest.DisplayName, opt => opt.MapFrom(src => $"{src.FirstName} {src.LastName[0]}."))
+
+                    // ✅ DÜZELTME 1: LastName kontrolü ekledik (Patlamaması için)
+                    .ForMember(dest => dest.DisplayName, opt => opt.MapFrom(src =>
+                        $"{src.FirstName} {(!string.IsNullOrEmpty(src.LastName) ? src.LastName[0] : ' ')}."))
+
                     .ForMember(dest => dest.Gender, opt => opt.MapFrom(src => src.Gender))
                     .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email))
                     .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.PhoneNumber))
                     .ForMember(dest => dest.UniversityName, opt => opt.MapFrom(src => src.UniversityName))
-                    .ForMember(dest => dest.IsVerified, opt => opt.MapFrom(src => src.IsUniversityVerified))
                     .ForMember(dest => dest.Age, opt => opt.MapFrom(src => CalculateAge(src.DateOfBirth)))
-                    .ForMember(dest => dest.ProfileImageUrl, opt => opt.Ignore()) // Profile'dan gelecek
-                    .ForMember(dest => dest.Roles, opt => opt.Ignore())
-                    .ForMember(dest => dest.Lock_Unlock, opt => opt.Ignore())
-                    .ForMember(dest => dest.HasUnreadMessages, opt => opt.Ignore())
-                    .ForMember(dest => dest.IsActive, opt => opt.Ignore())
-                    .ForMember(dest => dest.IsPassed, opt => opt.Ignore())
-                    .ForMember(dest => dest.IsSuperLike, opt => opt.Ignore());
+
+                    // ✅ DÜZELTME 2: ProfileImageUrl UserDto'da varsa onu da ignore etmelisin (Register'da profil resmi henüz yok)
+                    .ForMember(dest => dest.ProfileImageUrl, opt => opt.Ignore())
+
+                    // ✅ DÜZELTME 3: IsProfileCreated manuel set ediliyor, AutoMapper karıştırmasın
+                    .ForMember(dest => dest.IsProfileCreated, opt => opt.Ignore())
+
+                    .ForMember(dest => dest.IsVerified, opt => opt.MapFrom((src, dest, destMember, context) =>
+                    {
+                        // ✅ DÜZELTME: context.Items yerine context.TryGetItems kullanıyoruz.
+                        // Bu sayede eğer "Profile" verisi gönderilmemişse kod patlamaz.
+                        if (context.TryGetItems(out var items) &&
+                            items.TryGetValue("Profile", out var profileObj) &&
+                            profileObj is UserProfile profile)
+                        {
+                            return src.IsUniversityVerified && profile.IsPhotoVerified;
+                        }
+
+                        // Profil verisi yoksa sadece Üniversite onayına bak
+                        return src.IsUniversityVerified;
+                    }));
 
                 config.CreateMap<UsersDto, ApplicationUser>()
                     .ForMember(dest => dest.FirstName, opt => opt.MapFrom(src => src.Name))
@@ -56,18 +74,31 @@ namespace UniversityTinder
                     .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email))
                     .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.PhoneNumber))
                     .ForMember(dest => dest.UniversityName, opt => opt.MapFrom(src => src.UniversityName))
-                    .ForMember(dest => dest.IsVerified, opt => opt.MapFrom(src => src.IsUniversityVerified))
-                    .ForMember(dest => dest.Age, opt => opt.MapFrom(src => CalculateAge(src.DateOfBirth)));
+                    .ForMember(dest => dest.Age, opt => opt.MapFrom(src => CalculateAge(src.DateOfBirth)))
+                    // ✅ YENİ: IsVerified mapping'i düzelt
+                    .ForMember(dest => dest.IsVerified, opt => opt.MapFrom((src, dest, destMember, context) =>
+                    {
+                        // Context'ten profile bilgisini al (eğer varsa)
+                        if (context.Items.TryGetValue("Profile", out var profileObj) && profileObj is UserProfile profile)
+                        {
+                            // Email verified VE Photo verified ise true
+                            return src.IsUniversityVerified && profile.IsPhotoVerified;
+                        }
+                        // Profile yoksa sadece email verification
+                        return src.IsUniversityVerified;
+                    }));
 
                 // ========== USER PROFILE MAPPINGS ==========
 
                 // UserProfile <-> ProfileDto (Detailed profile)
                 config.CreateMap<UserProfile, ProfileDto>()
                     .ForMember(dest => dest.User, opt => opt.MapFrom(src => src.User))
-                    .ForMember(dest => dest.PhotosList, opt => opt.MapFrom(src => src.PhotosList)) // ⭐ Photos mapping
+                    .ForMember(dest => dest.PhotosList, opt => opt.MapFrom(src => src.PhotosList))
+                    .ForMember(dest => dest.Hobbies, opt => opt.MapFrom(src => src.Hobbies)) // ✅ YENİ: Hobbies mapping
                     .ReverseMap()
                     .ForMember(dest => dest.User, opt => opt.Ignore())
-                    .ForMember(dest => dest.PhotosList, opt => opt.Ignore()); // ⭐ Reverse'te ignore
+                    .ForMember(dest => dest.PhotosList, opt => opt.Ignore())
+                    .ForMember(dest => dest.Hobbies, opt => opt.Ignore()); // ✅ YENİ: Reverse'te ignore
 
                 // UserProfile <-> ProfileCreateDto
                 config.CreateMap<ProfileCreateDto, UserProfile>()

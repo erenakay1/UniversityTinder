@@ -199,10 +199,10 @@ namespace UniversityTinder.Services
                 // ============================================
                 var currentUser = await _db.UserProfiles
                     .Include(p => p.User)
-                    .Include(p => p.LikedUsersList)
-                    .Include(p => p.PassedUsersList)
-                    .Include(p => p.MatchesList)
-                    .Include(p => p.BlockedUsersList)
+                    //.Include(p => p.LikedUsersList)
+                    //.Include(p => p.PassedUsersList)
+                    //.Include(p => p.MatchesList)
+                    //.Include(p => p.BlockedUsersList)
                     .Include(p => p.PhotosList)
                     .FirstOrDefaultAsync(p => p.UserId == userId);
 
@@ -223,7 +223,7 @@ namespace UniversityTinder.Services
                 var query = _db.UserProfiles
                     .Include(p => p.User)
                     .Include(p => p.PhotosList)
-                    .Include(p => p.LikedUsersList)
+                    //.Include(p => p.LikedUsersList)
                     .Where(p =>
                         p.UserId != userId &&                    // Kendim değil
                         p.IsProfileCompleted &&                  // Profil tamamlanmış

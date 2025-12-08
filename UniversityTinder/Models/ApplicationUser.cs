@@ -18,5 +18,8 @@ namespace UniversityTinder.Models
         public DateTime? EmailVerifiedAt { get; set; }
         public DateTime? LastVerificationCheck { get; set; }
         public bool IsUniversityVerified { get; set; } = false;
+
+        public string? ProfileImageUrl {  get; set; } 
+
     }
 }
