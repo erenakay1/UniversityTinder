@@ -457,16 +457,16 @@ namespace UniversityTinder.Services
                 // ============================================
                 var currentUser = await _db.UserProfiles
                     .Include(p => p.User)
-                    .Include(p => p.LikedUsersList)
-                    .Include(p => p.ReceivedLikesList)
-                    .Include(p => p.MatchesList)
+                    //.Include(p => p.LikedUsersList)
+                    //.Include(p => p.ReceivedLikesList)
+                    //.Include(p => p.MatchesList)
                     .FirstOrDefaultAsync(p => p.UserId == userId);
 
                 var targetUser = await _db.UserProfiles
                     .Include(p => p.User)
-                    .Include(p => p.LikedUsersList)
-                    .Include(p => p.ReceivedLikesList)
-                    .Include(p => p.MatchesList)
+                    //.Include(p => p.LikedUsersList)
+                    //.Include(p => p.ReceivedLikesList)
+                    //.Include(p => p.MatchesList)
                     .FirstOrDefaultAsync(p => p.UserId == targetUserId);
 
                 if (currentUser == null || targetUser == null)
@@ -635,7 +635,7 @@ namespace UniversityTinder.Services
 
                 var currentUser = await _db.UserProfiles
                     .Include(p => p.User)
-                    .Include(p => p.PassedUsersList)
+                    //.Include(p => p.PassedUsersList)
                     .FirstOrDefaultAsync(p => p.UserId == userId);
 
                 var targetUser = await _db.UserProfiles
@@ -727,16 +727,16 @@ namespace UniversityTinder.Services
 
                 var currentUser = await _db.UserProfiles
                     .Include(p => p.User)
-                    .Include(p => p.LikedUsersList)
-                    .Include(p => p.ReceivedLikesList)
-                    .Include(p => p.MatchesList)
+                    //.Include(p => p.LikedUsersList)
+                    //.Include(p => p.ReceivedLikesList)
+                    //.Include(p => p.MatchesList)
                     .FirstOrDefaultAsync(p => p.UserId == userId);
 
                 var targetUser = await _db.UserProfiles
                     .Include(p => p.User)
-                    .Include(p => p.LikedUsersList)
-                    .Include(p => p.ReceivedLikesList)
-                    .Include(p => p.MatchesList)
+                    //.Include(p => p.LikedUsersList)
+                    //.Include(p => p.ReceivedLikesList)
+                    //.Include(p => p.MatchesList)
                     .FirstOrDefaultAsync(p => p.UserId == targetUserId);
 
                 if (currentUser == null || targetUser == null)
@@ -858,8 +858,8 @@ namespace UniversityTinder.Services
                 _logger.LogInformation("UndoLastSwipe başlatıldı. UserId: {UserId}", userId);
 
                 var currentUser = await _db.UserProfiles
-                    .Include(p => p.LikedUsersList)
-                    .Include(p => p.PassedUsersList)
+                    //.Include(p => p.LikedUsersList)
+                    //.Include(p => p.PassedUsersList)
                     .FirstOrDefaultAsync(p => p.UserId == userId);
 
                 if (currentUser == null)
@@ -947,9 +947,9 @@ namespace UniversityTinder.Services
             try
             {
                 var profile = await _db.UserProfiles
-                    .Include(p => p.LikedUsersList)
-                    .Include(p => p.PassedUsersList)
-                    .Include(p => p.MatchesList)
+                    //.Include(p => p.LikedUsersList)
+                    //.Include(p => p.PassedUsersList)
+                    //.Include(p => p.MatchesList)
                     .FirstOrDefaultAsync(p => p.UserId == userId);
 
                 if (profile == null)
